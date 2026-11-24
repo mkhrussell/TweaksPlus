@@ -67,6 +67,7 @@ pub const TWEAK_KEYS: &[(&str, &str)] = &[
     ("org.gnome.mutter", "overlay-key"),
     ("org.gnome.desktop.sound", "theme-name"),
     ("org.gnome.desktop.sound", "event-sounds"),
+    ("org.gnome.desktop.sound", "input-feedback-sounds"),
     ("org.gnome.desktop.sound", "allow-volume-above-100-percent"),
     ("org.gnome.desktop.peripherals.mouse", "middle-click-emulation"),
     ("org.gnome.desktop.peripherals.mouse", "accel-profile"),

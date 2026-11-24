@@ -4,6 +4,8 @@ mod appearance;
 mod fonts;
 mod keyboard;
 mod mouse;
+mod sound;
+mod startup;
 mod windows;
 
 use crate::panel::Panel;
@@ -16,5 +18,7 @@ pub fn all() -> Vec<Panel> {
         windows::build(),
         keyboard::build(),
         mouse::build(),
+        sound::build(),
+        startup::build(),
     ]
 }

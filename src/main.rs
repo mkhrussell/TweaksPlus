@@ -1,4 +1,5 @@
 mod app;
+mod autostart;
 mod panel;
 mod panels;
 mod settings;
