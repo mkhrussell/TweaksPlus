@@ -1,0 +1,6 @@
+tweaksplus (1.0.0) unstable; urgency=medium
+
+  * Initial native Debian package for the v1.0.0 release.
+  * Ships the desktop launcher, scalable SVG icon and 512px PNG icon.
+
+ -- Kamrul Hasan <mkhrussell@gmail.com>  Tue, 24 Nov 2026 17:04:35 -0500

@@ -1,0 +1,28 @@
+Source: tweaksplus
+Section: gnome
+Priority: optional
+Maintainer: Kamrul Hasan <mkhrussell@gmail.com>
+Build-Depends:
+ cargo (>= 1.92),
+ rustc (>= 1.92),
+ pkg-config,
+ libgtk-4-dev (>= 4.10),
+ libadwaita-1-dev (>= 1.5),
+ libglib2.0-dev,
+ libpango1.0-dev,
+ dpkg-dev,
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+
+Package: tweaksplus
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ adwaita-icon-theme,
+Description: Advanced GNOME and Ubuntu customization tool
+ TweaksPlus is a native GTK4/Rust alternative to GNOME Tweaks. It exposes the
+ familiar appearance, fonts, keyboard, mouse, sound, windows and startup
+ panels, plus classic top bar, desktop, workspaces, general and power tweaks.
+ .
+ All settings use GSettings, so changes apply immediately and stay in sync
+ with the rest of the desktop.

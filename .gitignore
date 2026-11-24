@@ -1,4 +1,8 @@
 /target/
+/debian/tweaksplus/
+/debian/substvars
+/debian/files
+.cargo-home/
 *.rs.bk
 *.swp
 .DS_Store

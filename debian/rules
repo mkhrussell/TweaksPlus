@@ -1,0 +1,40 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/default.mk
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export CARGO_HOME ?= $(CURDIR)/.cargo-home
+
+PKGDIR = debian/tweaksplus
+DEB = ../tweaksplus_$(DEB_VERSION)_$(DEB_HOST_ARCH).deb
+
+.PHONY: build binary clean
+
+build:
+	cargo build --release --locked
+
+binary: build
+	install -d $(PKGDIR)/DEBIAN
+	install -d $(PKGDIR)/usr/bin
+	install -m 0755 target/release/tweaksplus $(PKGDIR)/usr/bin/tweaksplus
+
+	install -d $(PKGDIR)/usr/share/applications
+	install -m 0644 data/com.mkhrussell.TweaksPlus.desktop \
+		$(PKGDIR)/usr/share/applications/com.mkhrussell.TweaksPlus.desktop
+
+	install -d $(PKGDIR)/usr/share/icons/hicolor/scalable/apps
+	install -m 0644 data/icons/hicolor/scalable/apps/com.mkhrussell.TweaksPlus.svg \
+		$(PKGDIR)/usr/share/icons/hicolor/scalable/apps/com.mkhrussell.TweaksPlus.svg
+
+	install -d $(PKGDIR)/usr/share/icons/hicolor/512x512/apps
+	install -m 0644 data/icons/hicolor/512x512/apps/com.mkhrussell.TweaksPlus.png \
+		$(PKGDIR)/usr/share/icons/hicolor/512x512/apps/com.mkhrussell.TweaksPlus.png
+
+	dpkg-shlibdeps -O $(PKGDIR)/usr/bin/tweaksplus > debian/substvars
+	dpkg-gencontrol -ptweaksplus -P$(PKGDIR) -Tdebian/substvars
+	dpkg-deb --build --root-owner-group $(PKGDIR) $(DEB)
+
+clean:
+	rm -rf $(PKGDIR) debian/substvars debian/*.substvars
+	rm -f ../*.deb ../*.buildinfo ../*.changes
+	cargo clean

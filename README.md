@@ -47,6 +47,22 @@ sudo gtk-update-icon-cache -f /usr/share/icons/hicolor
 For a user-local install, replace `/usr/share` with `~/.local/share` and omit
 `sudo`.
 
+## Debian / Ubuntu package
+
+The `debian/` directory contains a native Debian source package. Build a binary
+`.deb` with:
+
+```sh
+sudo apt install cargo rustc pkg-config libgtk-4-dev libadwaita-1-dev \
+  libglib2.0-dev libpango1.0-dev fakeroot
+fakeroot debian/rules binary
+sudo apt install ../tweaksplus_1.0.0_amd64.deb
+```
+
+`dpkg-buildpackage -us -uc -b` also works and produces the same package. Shared
+library dependencies are generated automatically with `dpkg-shlibdeps`, so the
+package uses the correct library names for the target Ubuntu release.
+
 ## Requirements
 
 - Rust 1.92+
