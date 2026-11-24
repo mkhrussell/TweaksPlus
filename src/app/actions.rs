@@ -29,9 +29,9 @@ pub fn install(app: &adw::Application) {
                     .program_name("TweaksPlus")
                     .version(env!("CARGO_PKG_VERSION"))
                     .comments("Advanced GNOME and Ubuntu customization")
-                    .website("https://github.com/kamrul/TweaksPlus")
+                    .website("https://github.com/mkhrussell/TweaksPlus")
                     .license_type(gtk4::License::Gpl30)
-                    .authors(["Kamrul"])
+                    .authors(["Kamrul Hasan"])
                     .build();
                 if let Some(window) = app.active_window() {
                     dialog.set_transient_for(Some(&window));

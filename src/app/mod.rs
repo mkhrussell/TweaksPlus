@@ -4,7 +4,7 @@ mod window;
 use gio::prelude::*;
 use libadwaita as adw;
 
-pub const APP_ID: &str = "io.github.kamrul.TweaksPlus";
+pub const APP_ID: &str = "com.mkhrussell.TweaksPlus";
 
 pub fn run() -> glib::ExitCode {
     let app = adw::Application::builder().application_id(APP_ID).build();
