@@ -51,9 +51,28 @@ pub fn combo(
     subtitle: Option<&str>,
     choices: &[Choice],
 ) -> adw::ComboRow {
+    combo_owned(
+        schema,
+        key,
+        title,
+        subtitle,
+        choices
+            .iter()
+            .map(|(value, label)| (value.to_string(), label.to_string()))
+            .collect(),
+    )
+}
+
+/// A drop-down row whose options are discovered at runtime (themes, sounds…).
+pub fn combo_owned(
+    schema: &str,
+    key: &str,
+    title: &str,
+    subtitle: Option<&str>,
+    choices: Vec<(String, String)>,
+) -> adw::ComboRow {
     let settings = gio::Settings::new(schema);
     let key = key.to_owned();
-    let choices: Vec<Choice> = choices.to_vec();
     let model = gtk4::StringList::new(&[]);
     for (_, label) in &choices {
         model.append(label);
@@ -62,7 +81,7 @@ pub fn combo(
     let current = settings.string(&key);
     let selected = choices
         .iter()
-        .position(|(value, _)| *value == current.as_str())
+        .position(|(value, _)| value == current.as_str())
         .unwrap_or(0) as u32;
 
     let row = adw::ComboRow::builder()
@@ -76,7 +95,7 @@ pub fn combo(
 
     row.connect_selected_notify(clone!(#[strong] settings, #[strong] choices, #[strong] key, move |row| {
         if let Some((value, _)) = choices.get(row.selected() as usize) {
-            if settings.string(&key).as_str() != *value {
+            if settings.string(&key).as_str() != value.as_str() {
                 let _ = settings.set_string(&key, value);
             }
         }
@@ -86,7 +105,7 @@ pub fn combo(
         Some(&key),
         clone!(#[weak] row, #[strong] choices, #[strong] key, move |settings, _| {
             let value = settings.string(&key);
-            if let Some(index) = choices.iter().position(|(stored, _)| *stored == value.as_str()) {
+            if let Some(index) = choices.iter().position(|(stored, _)| stored == value.as_str()) {
                 if row.selected() != index as u32 {
                     row.set_selected(index as u32);
                 }
