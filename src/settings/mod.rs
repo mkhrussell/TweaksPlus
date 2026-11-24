@@ -83,6 +83,7 @@ pub const TWEAK_KEYS: &[(&str, &str)] = &[
     ("org.gnome.desktop.peripherals.mouse", "middle-click-emulation"),
     ("org.gnome.desktop.peripherals.mouse", "accel-profile"),
     ("org.gnome.desktop.peripherals.mouse", "natural-scroll"),
+    ("org.gnome.desktop.peripherals.touchpad", "disable-while-typing"),
     ("org.gnome.desktop.peripherals.touchpad", "tap-to-click"),
     ("org.gnome.desktop.peripherals.touchpad", "two-finger-scrolling-enabled"),
     ("org.gnome.desktop.peripherals.touchpad", "natural-scroll"),

@@ -32,7 +32,7 @@ cargo run
 ## Requirements
 
 - Rust 1.92+
-- GTK4 >= 4.10, libadwaita >= 1.4, GIO >= 2.70
+- GTK4 >= 4.10, libadwaita >= 1.5, GIO >= 2.70
 - A GNOME session (settings still work in other sessions, but some changes
   require GNOME Shell / Mutter to be running)
 

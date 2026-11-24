@@ -51,6 +51,12 @@ pub fn build() -> Panel {
     ));
     touchpad.add(&rows::switch(
         TOUCHPAD,
+        "disable-while-typing",
+        "Disable While Typing",
+        Some("Prevent accidental pointer movement while typing"),
+    ));
+    touchpad.add(&rows::switch(
+        TOUCHPAD,
         "tap-to-click",
         "Tap to Click",
         None,
