@@ -1,0 +1,23 @@
+[package]
+name = "tweaksplus"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92"
+description = "An advanced GNOME/Ubuntu customization tool built with GTK4 and Rust"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/kamrul/TweaksPlus"
+
+[[bin]]
+name = "tweaksplus"
+path = "src/main.rs"
+
+[dependencies]
+gio = { version = "0.22", features = ["v2_70"] }
+glib = "0.22"
+gtk4 = { version = "0.11", features = ["v4_10"] }
+libadwaita = { version = "0.9", features = ["gtk_v4_10", "v1_4"] }
+
+[profile.release]
+strip = true
+lto = "thin"
+codegen-units = 1
