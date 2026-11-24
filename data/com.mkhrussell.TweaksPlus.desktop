@@ -10,3 +10,4 @@ Terminal=false
 Categories=GTK;GNOME;Settings;DesktopSettings;
 Keywords=gnome;ubuntu;tweaks;settings;theme;appearance;desktop;
 StartupNotify=true
+StartupWMClass=com.mkhrussell.TweaksPlus
