@@ -241,6 +241,104 @@ pub fn spin(
     row
 }
 
+/// A numeric row for integer-valued settings.
+pub fn spin_int(
+    schema: &str,
+    key: &str,
+    title: &str,
+    subtitle: Option<&str>,
+    min: i32,
+    max: i32,
+    step: i32,
+) -> adw::SpinRow {
+    let settings = gio::Settings::new(schema);
+    let key = key.to_owned();
+    let adjustment = gtk4::Adjustment::new(
+        settings.int(&key) as f64,
+        min as f64,
+        max as f64,
+        step as f64,
+        step as f64,
+        0.0,
+    );
+    let row = adw::SpinRow::builder()
+        .title(title)
+        .adjustment(&adjustment)
+        .digits(0)
+        .build();
+    if let Some(subtitle) = subtitle {
+        row.set_subtitle(subtitle);
+    }
+
+    row.connect_value_notify(clone!(#[strong] settings, #[strong] key, move |row| {
+        let value = row.value() as i32;
+        if settings.int(&key) != value {
+            let _ = settings.set_int(&key, value);
+        }
+    }));
+
+    settings.connect_changed(
+        Some(&key),
+        clone!(#[weak] row, #[strong] key, move |settings, _| {
+            let value = settings.int(&key) as f64;
+            if (row.value() - value).abs() > f64::EPSILON {
+                row.set_value(value);
+            }
+        }),
+    );
+
+    row
+}
+
+/// A numeric row for unsigned integer settings (for example, idle delays).
+pub fn spin_uint(
+    schema: &str,
+    key: &str,
+    title: &str,
+    subtitle: Option<&str>,
+    min: u32,
+    max: u32,
+    step: u32,
+) -> adw::SpinRow {
+    let settings = gio::Settings::new(schema);
+    let key = key.to_owned();
+    let adjustment = gtk4::Adjustment::new(
+        settings.uint(&key) as f64,
+        min as f64,
+        max as f64,
+        step as f64,
+        step as f64,
+        0.0,
+    );
+    let row = adw::SpinRow::builder()
+        .title(title)
+        .adjustment(&adjustment)
+        .digits(0)
+        .build();
+    if let Some(subtitle) = subtitle {
+        row.set_subtitle(subtitle);
+    }
+
+    row.connect_value_notify(clone!(#[strong] settings, #[strong] key, move |row| {
+        let value = row.value() as u32;
+        if settings.uint(&key) != value {
+            let _ = settings.set_uint(&key, value);
+        }
+    }));
+
+    settings.connect_changed(
+        Some(&key),
+        clone!(#[weak] row, #[strong] key, move |settings, _| {
+            let value = settings.uint(&key) as f64;
+            if (row.value() - value).abs() > f64::EPSILON {
+                row.set_value(value);
+            }
+        }),
+    );
+
+    row
+}
+
 /// A font picker row.
 pub fn font(schema: &str, key: &str, title: &str) -> adw::ActionRow {
     let settings = gio::Settings::new(schema);
