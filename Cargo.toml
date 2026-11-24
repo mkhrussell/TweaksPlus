@@ -16,6 +16,7 @@ gio = { version = "0.22", features = ["v2_70"] }
 glib = "0.22"
 gtk4 = { version = "0.11", features = ["v4_10"] }
 libadwaita = { version = "0.9", features = ["gtk_v4_10", "v1_4"] }
+pango = "0.22"
 
 [profile.release]
 strip = true
