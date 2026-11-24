@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=TweaksPlus
+GenericName=Advanced System Settings
+Comment=Advanced GNOME and Ubuntu customization
+Exec=tweaksplus
+Icon=com.mkhrussell.TweaksPlus
+Terminal=false
+Categories=GTK;GNOME;Settings;DesktopSettings;
+Keywords=gnome;ubuntu;tweaks;settings;theme;appearance;desktop;
+StartupNotify=true

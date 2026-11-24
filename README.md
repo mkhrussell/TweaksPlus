@@ -29,6 +29,24 @@ cargo build
 cargo run
 ```
 
+## Installing the icon and desktop entry
+
+After building, install the launcher and its icon so TweaksPlus appears in the
+GNOME app grid with its proper icon:
+
+```sh
+sudo install -Dm644 data/com.mkhrussell.TweaksPlus.desktop \
+  /usr/share/applications/com.mkhrussell.TweaksPlus.desktop
+sudo install -Dm644 data/icons/hicolor/scalable/apps/com.mkhrussell.TweaksPlus.svg \
+  /usr/share/icons/hicolor/scalable/apps/com.mkhrussell.TweaksPlus.svg
+sudo install -Dm644 data/icons/hicolor/512x512/apps/com.mkhrussell.TweaksPlus.png \
+  /usr/share/icons/hicolor/512x512/apps/com.mkhrussell.TweaksPlus.png
+sudo gtk-update-icon-cache -f /usr/share/icons/hicolor
+```
+
+For a user-local install, replace `/usr/share` with `~/.local/share` and omit
+`sudo`.
+
 ## Requirements
 
 - Rust 1.92+

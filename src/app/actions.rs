@@ -24,15 +24,27 @@ pub fn install(app: &adw::Application) {
             .build(),
         gio::ActionEntry::builder("about")
             .activate(|app: &adw::Application, _, _| {
-                let dialog = gtk4::AboutDialog::builder()
-                    .logo_icon_name(APP_ID)
+                let mut builder = gtk4::AboutDialog::builder()
                     .program_name("TweaksPlus")
                     .version(env!("CARGO_PKG_VERSION"))
                     .comments("Advanced GNOME and Ubuntu customization")
                     .website("https://github.com/mkhrussell/TweaksPlus")
                     .license_type(gtk4::License::Gpl30)
-                    .authors(["Kamrul Hasan"])
-                    .build();
+                    .authors(["Kamrul Hasan"]);
+
+                // Embed the icon so the About dialog looks right even when the
+                // application has not been installed into the icon theme yet.
+                let icon = include_bytes!(
+                    "../../data/icons/hicolor/512x512/apps/com.mkhrussell.TweaksPlus.png"
+                );
+                if let Ok(texture) = gtk4::gdk::Texture::from_bytes(&glib::Bytes::from_static(icon))
+                {
+                    builder = builder.logo(&texture);
+                } else {
+                    builder = builder.logo_icon_name(APP_ID);
+                }
+
+                let dialog = builder.build();
                 if let Some(window) = app.active_window() {
                     dialog.set_transient_for(Some(&window));
                     dialog.set_modal(true);

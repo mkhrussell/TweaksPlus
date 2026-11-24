@@ -100,6 +100,7 @@ impl MainWindow {
 
         let window = adw::ApplicationWindow::builder()
             .application(app)
+            .icon_name(crate::app::APP_ID)
             .title("TweaksPlus")
             .default_width(1000)
             .default_height(700)
