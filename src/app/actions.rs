@@ -49,5 +49,7 @@ pub fn install(app: &adw::Application) {
     menu.append(Some("Reset All Tweaks"), Some("app.reset-all"));
     menu.append(Some("About TweaksPlus"), Some("app.about"));
     menu.append(Some("Quit"), Some("app.quit"));
-    app.set_menubar(Some(&menu));
+    // GtkApplication requires the application to be registered before a
+    // menubar can be attached.
+    app.connect_startup(move |app| app.set_menubar(Some(&menu)));
 }
