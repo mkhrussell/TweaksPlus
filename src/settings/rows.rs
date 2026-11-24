@@ -43,6 +43,87 @@ pub fn switch(schema: &str, key: &str, title: &str, subtitle: Option<&str>) -> a
     row
 }
 
+/// A switch that maps two specific string values to on/off.
+pub fn value_switch(
+    schema: &str,
+    key: &str,
+    title: &str,
+    subtitle: Option<&str>,
+    on_value: &'static str,
+    off_value: &'static str,
+) -> adw::SwitchRow {
+    let settings = gio::Settings::new(schema);
+    let key = key.to_owned();
+    let row = adw::SwitchRow::builder()
+        .title(title)
+        .active(settings.string(&key).as_str() == on_value)
+        .build();
+    if let Some(subtitle) = subtitle {
+        row.set_subtitle(subtitle);
+    }
+
+    row.connect_active_notify(clone!(#[strong] settings, #[strong] key, move |row| {
+        let value = if row.is_active() { on_value } else { off_value };
+        if settings.string(&key).as_str() != value {
+            let _ = settings.set_string(&key, value);
+        }
+    }));
+
+    settings.connect_changed(
+        Some(&key),
+        clone!(#[weak] row, #[strong] key, move |settings, _| {
+            let active = settings.string(&key).as_str() == on_value;
+            if row.is_active() != active {
+                row.set_active(active);
+            }
+        }),
+    );
+
+    row
+}
+
+/// A switch that is on for every value except `off_value`.
+///
+/// Used for pointer acceleration profiles: switching off selects the flat
+/// profile, switching on restores the schema default.
+pub fn enum_switch(
+    schema: &str,
+    key: &str,
+    title: &str,
+    subtitle: Option<&str>,
+    off_value: &'static str,
+) -> adw::SwitchRow {
+    let settings = gio::Settings::new(schema);
+    let key = key.to_owned();
+    let row = adw::SwitchRow::builder()
+        .title(title)
+        .active(settings.string(&key).as_str() != off_value)
+        .build();
+    if let Some(subtitle) = subtitle {
+        row.set_subtitle(subtitle);
+    }
+
+    row.connect_active_notify(clone!(#[strong] settings, #[strong] key, move |row| {
+        if row.is_active() {
+            settings.reset(&key);
+        } else {
+            let _ = settings.set_string(&key, off_value);
+        }
+    }));
+
+    settings.connect_changed(
+        Some(&key),
+        clone!(#[weak] row, #[strong] key, move |settings, _| {
+            let active = settings.string(&key).as_str() != off_value;
+            if row.is_active() != active {
+                row.set_active(active);
+            }
+        }),
+    );
+
+    row
+}
+
 /// A drop-down row for string-valued settings.
 pub fn combo(
     schema: &str,
