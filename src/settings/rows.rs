@@ -32,7 +32,7 @@ pub fn switch(schema: &str, key: &str, title: &str, subtitle: Option<&str>) -> a
 
     settings.connect_changed(
         Some(&key),
-        clone!(#[weak] row, #[strong] settings, #[strong] key, move |settings, _| {
+        clone!(#[weak] row, #[strong] key, move |settings, _| {
             let value = settings.boolean(&key);
             if row.is_active() != value {
                 row.set_active(value);
@@ -84,7 +84,7 @@ pub fn combo(
 
     settings.connect_changed(
         Some(&key),
-        clone!(#[weak] row, #[strong] settings, #[strong] choices, #[strong] key, move |settings, _| {
+        clone!(#[weak] row, #[strong] choices, #[strong] key, move |settings, _| {
             let value = settings.string(&key);
             if let Some(index) = choices.iter().position(|(stored, _)| *stored == value.as_str()) {
                 if row.selected() != index as u32 {
@@ -130,7 +130,7 @@ pub fn spin(
 
     settings.connect_changed(
         Some(&key),
-        clone!(#[weak] row, #[strong] settings, #[strong] key, move |settings, _| {
+        clone!(#[weak] row, #[strong] key, move |settings, _| {
             let value = settings.double(&key);
             if (row.value() - value).abs() > f64::EPSILON {
                 row.set_value(value);
@@ -164,7 +164,7 @@ pub fn font(schema: &str, key: &str, title: &str) -> adw::ActionRow {
 
     settings.connect_changed(
         Some(&key),
-        clone!(#[weak] button, #[strong] settings, #[strong] key, move |settings, _| {
+        clone!(#[weak] button, #[strong] key, move |settings, _| {
             let description = pango::FontDescription::from_string(&settings.string(&key));
             if button.font_desc().as_ref() != Some(&description) {
                 button.set_font_desc(&description);
@@ -194,7 +194,7 @@ pub fn file(
         .build();
 
     button.connect_clicked(clone!(#[strong] settings, #[strong] mime_types, #[strong] key, move |button| {
-        let mut dialog = gtk4::FileDialog::builder().title("Choose a file").build();
+        let dialog = gtk4::FileDialog::builder().title("Choose a file").build();
         let filters = gio::ListStore::new::<gtk4::FileFilter>();
         let filter = gtk4::FileFilter::new();
         for mime in mime_types {
@@ -230,7 +230,7 @@ pub fn file(
     row.set_subtitle(&settings.string(&key));
     settings.connect_changed(
         Some(&key),
-        clone!(#[weak] row, #[strong] settings, #[strong] key, move |settings, _| {
+        clone!(#[weak] row, #[strong] key, move |settings, _| {
             row.set_subtitle(&settings.string(&key));
         }),
     );

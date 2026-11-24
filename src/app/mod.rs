@@ -1,25 +1,16 @@
-use gtk4::prelude::*;
+mod actions;
+mod window;
+
+use gio::prelude::*;
 use libadwaita as adw;
-use libadwaita::prelude::*;
 
 pub const APP_ID: &str = "io.github.kamrul.TweaksPlus";
 
 pub fn run() -> glib::ExitCode {
     let app = adw::Application::builder().application_id(APP_ID).build();
 
-    app.connect_activate(|app| {
-        let window = adw::ApplicationWindow::builder()
-            .application(app)
-            .title("TweaksPlus")
-            .default_width(980)
-            .default_height(680)
-            .build();
-
-        window.set_content(Some(&gtk4::Label::new(Some(
-            "TweaksPlus — skeleton bootstrap",
-        ))));
-        window.present();
-    });
+    actions::install(&app);
+    app.connect_activate(|app| window::MainWindow::new(app).present());
 
     app.run()
 }
