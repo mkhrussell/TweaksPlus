@@ -63,6 +63,35 @@ sudo apt install ../tweaksplus_1.0.0_amd64.deb
 library dependencies are generated automatically with `dpkg-shlibdeps`, so the
 package uses the correct library names for the target Ubuntu release.
 
+## User-local install (no build)
+
+The installer downloads the prebuilt `.deb` from a GitHub release and extracts
+it into `~/.local`, so no Cargo build or system-wide install is needed:
+
+```sh
+curl -fsSL https://github.com/mkhrussell/TweaksPlus/releases/download/v1.0.0/install-local.sh | bash
+```
+
+It installs the binary to `~/.local/bin`, the desktop launcher to
+`~/.local/share/applications`, and the icons to `~/.local/share/icons/hicolor`.
+Set `RELEASE_TAG` to install a specific release:
+
+```sh
+RELEASE_TAG=v1.0.0 bash scripts/install-local.sh
+```
+
+## Updating the GitHub release
+
+Maintainers can rebuild the package and refresh the release in one step:
+
+```sh
+scripts/update-release.sh
+```
+
+The script replaces the `.deb` asset, uploads `install-local.sh`, and updates
+the release notes. It uses `GITHUB_TOKEN` or the GitHub token in git's
+credential store.
+
 ## Requirements
 
 - Rust 1.92+
