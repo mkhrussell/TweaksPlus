@@ -1,3 +1,12 @@
+tweaksplus (1.1.0) unstable; urgency=medium
+
+  * Support Ubuntu 26.04 and CachyOS GNOME with the same binary.
+  * Skip unavailable GSettings keys instead of aborting on rolling releases.
+  * Fall back to idle-action keys where GNOME 51 removed lid-close actions.
+  * Add Arch/CachyOS packaging and portable release archives.
+
+ -- Kamrul Hasan <mkhrussell@gmail.com>  Fri, 27 Nov 2026 15:50:00 -0500
+
 tweaksplus (1.0.0) unstable; urgency=medium
 
   * Initial native Debian package for the v1.0.0 release.

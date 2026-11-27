@@ -58,6 +58,20 @@ pub fn build() -> Panel {
                 ("large", "Large"),
             ],
         ));
+    } else {
+        // Ubuntu ships Desktop Icons NG by default; CachyOS/Arch users can
+        // install it from the repositories if they want these extra options.
+        let hint = crate::settings::environment::extension_hint(
+            Some("gnome-shell-extension-desktop-icons-ng"),
+            "Install the Desktop Icons NG extension for more icon options",
+        );
+        icons.add(
+            &adw::ActionRow::builder()
+                .title("Additional Icon Options")
+                .subtitle(hint)
+                .sensitive(false)
+                .build(),
+        );
     }
 
     page.add(&icons);

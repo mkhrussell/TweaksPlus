@@ -11,9 +11,23 @@ use libadwaita::prelude::*;
 /// A `(stored value, visible label)` pair used by choice widgets.
 pub type Choice = (&'static str, &'static str);
 
+/// Explains why a row is present but cannot be changed on this system.
+fn unavailable_subtitle(subtitle: Option<&str>) -> String {
+    match subtitle {
+        Some(text) => format!("{text} — not available in this GNOME version"),
+        None => "Not available in this GNOME version".to_owned(),
+    }
+}
+
 /// A boolean switch row.
 pub fn switch(schema: &str, key: &str, title: &str, subtitle: Option<&str>) -> adw::SwitchRow {
-    let settings = gio::Settings::new(schema);
+    let Some(settings) = crate::settings::settings_for(schema, key) else {
+        return adw::SwitchRow::builder()
+            .title(title)
+            .subtitle(unavailable_subtitle(subtitle))
+            .sensitive(false)
+            .build();
+    };
     let key = key.to_owned();
     let row = adw::SwitchRow::builder()
         .title(title)
@@ -52,7 +66,13 @@ pub fn value_switch(
     on_value: &'static str,
     off_value: &'static str,
 ) -> adw::SwitchRow {
-    let settings = gio::Settings::new(schema);
+    let Some(settings) = crate::settings::settings_for(schema, key) else {
+        return adw::SwitchRow::builder()
+            .title(title)
+            .subtitle(unavailable_subtitle(subtitle))
+            .sensitive(false)
+            .build();
+    };
     let key = key.to_owned();
     let row = adw::SwitchRow::builder()
         .title(title)
@@ -93,7 +113,13 @@ pub fn enum_switch(
     subtitle: Option<&str>,
     off_value: &'static str,
 ) -> adw::SwitchRow {
-    let settings = gio::Settings::new(schema);
+    let Some(settings) = crate::settings::settings_for(schema, key) else {
+        return adw::SwitchRow::builder()
+            .title(title)
+            .subtitle(unavailable_subtitle(subtitle))
+            .sensitive(false)
+            .build();
+    };
     let key = key.to_owned();
     let row = adw::SwitchRow::builder()
         .title(title)
@@ -152,7 +178,13 @@ pub fn combo_owned(
     subtitle: Option<&str>,
     choices: Vec<(String, String)>,
 ) -> adw::ComboRow {
-    let settings = gio::Settings::new(schema);
+    let Some(settings) = crate::settings::settings_for(schema, key) else {
+        return adw::ComboRow::builder()
+            .title(title)
+            .subtitle(unavailable_subtitle(subtitle))
+            .sensitive(false)
+            .build();
+    };
     let key = key.to_owned();
     let model = gtk4::StringList::new(&[]);
     for (_, label) in &choices {
@@ -209,7 +241,14 @@ pub fn spin(
     step: f64,
     digits: u32,
 ) -> adw::SpinRow {
-    let settings = gio::Settings::new(schema);
+    let Some(settings) = crate::settings::settings_for(schema, key) else {
+        return adw::SpinRow::builder()
+            .title(title)
+            .subtitle(unavailable_subtitle(subtitle))
+            .adjustment(&gtk4::Adjustment::new(0.0, min, max, step, step, 0.0))
+            .sensitive(false)
+            .build();
+    };
     let key = key.to_owned();
     let adjustment = gtk4::Adjustment::new(settings.double(&key), min, max, step, step, 0.0);
     let row = adw::SpinRow::builder()
@@ -251,7 +290,14 @@ pub fn spin_int(
     max: i32,
     step: i32,
 ) -> adw::SpinRow {
-    let settings = gio::Settings::new(schema);
+    let Some(settings) = crate::settings::settings_for(schema, key) else {
+        return adw::SpinRow::builder()
+            .title(title)
+            .subtitle(unavailable_subtitle(subtitle))
+            .adjustment(&gtk4::Adjustment::new(0.0, min as f64, max as f64, step as f64, 1.0, 0.0))
+            .sensitive(false)
+            .build();
+    };
     let key = key.to_owned();
     let adjustment = gtk4::Adjustment::new(
         settings.int(&key) as f64,
@@ -300,7 +346,14 @@ pub fn spin_uint(
     max: u32,
     step: u32,
 ) -> adw::SpinRow {
-    let settings = gio::Settings::new(schema);
+    let Some(settings) = crate::settings::settings_for(schema, key) else {
+        return adw::SpinRow::builder()
+            .title(title)
+            .subtitle(unavailable_subtitle(subtitle))
+            .adjustment(&gtk4::Adjustment::new(0.0, min as f64, max as f64, step as f64, 1.0, 0.0))
+            .sensitive(false)
+            .build();
+    };
     let key = key.to_owned();
     let adjustment = gtk4::Adjustment::new(
         settings.uint(&key) as f64,
@@ -341,7 +394,13 @@ pub fn spin_uint(
 
 /// A font picker row.
 pub fn font(schema: &str, key: &str, title: &str) -> adw::ActionRow {
-    let settings = gio::Settings::new(schema);
+    let Some(settings) = crate::settings::settings_for(schema, key) else {
+        return adw::ActionRow::builder()
+            .title(title)
+            .subtitle(unavailable_subtitle(None))
+            .sensitive(false)
+            .build();
+    };
     let key = key.to_owned();
     let current = settings.string(&key);
     let description = pango::FontDescription::from_string(&current);
@@ -382,7 +441,13 @@ pub fn file(
     title: &str,
     mime_types: &'static [&'static str],
 ) -> adw::ActionRow {
-    let settings = gio::Settings::new(schema);
+    let Some(settings) = crate::settings::settings_for(schema, key) else {
+        return adw::ActionRow::builder()
+            .title(title)
+            .subtitle(unavailable_subtitle(None))
+            .sensitive(false)
+            .build();
+    };
     let key = key.to_owned();
     let button = gtk4::Button::builder()
         .icon_name("document-open-symbolic")
@@ -440,7 +505,13 @@ pub fn file(
 /// This mirrors the radio groups used by GNOME Tweaks for hinting,
 /// antialiasing and window focus.
 pub fn choice_buttons(schema: &str, key: &str, title: &str, choices: &[Choice]) -> adw::ActionRow {
-    let settings = gio::Settings::new(schema);
+    let Some(settings) = crate::settings::settings_for(schema, key) else {
+        return adw::ActionRow::builder()
+            .title(title)
+            .subtitle(unavailable_subtitle(None))
+            .sensitive(false)
+            .build();
+    };
     let key = key.to_owned();
     let choices: Vec<Choice> = choices.to_vec();
     let container = gtk4::Box::builder()

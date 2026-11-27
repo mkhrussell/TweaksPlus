@@ -1,9 +1,9 @@
 [package]
 name = "tweaksplus"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 rust-version = "1.92"
-description = "An advanced GNOME/Ubuntu customization tool built with GTK4 and Rust"
+description = "An advanced GNOME customization tool for Ubuntu and CachyOS, built with GTK4 and Rust"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/mkhrussell/TweaksPlus"
 homepage = "https://mkhrussell.com"

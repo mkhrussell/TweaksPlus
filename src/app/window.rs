@@ -22,14 +22,16 @@ impl MainWindow {
             .build();
         list.add_css_class("navigation-sidebar");
 
+        // AdwActionRow is itself a GtkListBoxRow. Wrapping it in another
+        // ListBoxRow is invalid and newer libadwaita versions warn about it,
+        // so add the rows directly.
         for panel in panels.iter() {
             let row = adw::ActionRow::builder().title(panel.title).build();
             if let Some(icon) = panel.icon {
                 row.add_prefix(&gtk4::Image::from_icon_name(icon));
             }
-            let list_row = gtk4::ListBoxRow::builder().child(&row).build();
-            list_row.set_widget_name(panel.id);
-            list.append(&list_row);
+            row.set_widget_name(panel.id);
+            list.append(&row);
         }
 
         let sidebar_scroll = gtk4::ScrolledWindow::builder()

@@ -27,7 +27,7 @@ pub fn install(app: &adw::Application) {
                 let mut builder = gtk4::AboutDialog::builder()
                     .program_name("TweaksPlus")
                     .version(env!("CARGO_PKG_VERSION"))
-                    .comments("Advanced GNOME and Ubuntu customization")
+                    .comments("Advanced GNOME customization for Ubuntu and CachyOS")
                     .website("https://github.com/mkhrussell/TweaksPlus")
                     .license_type(gtk4::License::Gpl30)
                     .authors(["Kamrul Hasan"]);

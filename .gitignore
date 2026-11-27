@@ -1,4 +1,8 @@
 /target/
+/packaging/arch/tweaksplus-*-src.tar.xz
+/packaging/*/src/
+/packaging/*/pkg/
+*.pkg.tar.*
 /debian/tweaksplus/
 /debian/substvars
 /debian/files

@@ -3,8 +3,14 @@
 //! Every row in TweaksPlus reads its initial value from GSettings, writes
 //! changes back to GSettings, and listens for external changes so the UI stays
 //! in sync when a setting is changed by another application.
+//!
+//! GSettings aborts the whole process when an unknown schema or key is used.
+//! Distributions ship different sets of schemas (GNOME Shell extensions are
+//! optional, and rolling releases such as CachyOS regularly move keys between
+//! versions), so every access goes through [`key_available`] first.
 
 pub mod discover;
+pub mod environment;
 pub mod rows;
 
 use gio::prelude::*;
@@ -19,16 +25,38 @@ pub fn schema_available(schema: &str) -> bool {
         .is_some()
 }
 
-/// Resets a single key to its default value.
+/// Returns whether `key` exists in `schema` on this system.
+///
+/// A schema can be present while a key has been removed in a newer GNOME
+/// release (for example `lid-close-ac-action` in GNOME 51). Checking the key
+/// as well as the schema is what keeps TweaksPlus running on both Ubuntu and
+/// rolling Arch-based distributions.
+pub fn key_available(schema: &str, key: &str) -> bool {
+    gio::SettingsSchemaSource::default()
+        .and_then(|source| source.lookup(schema, true))
+        .is_some_and(|schema| schema.has_key(key))
+}
+
+/// Builds a settings object only when both the schema and the key exist.
+///
+/// Never call `gio::Settings::new()` without this guard: GLib terminates the
+/// application for missing schemas, and reading a missing key does the same.
+pub fn settings_for(schema: &str, key: &str) -> Option<gio::Settings> {
+    key_available(schema, key).then(|| gio::Settings::new(schema))
+}
+
+/// Resets a single key to its default value, if that key exists here.
 pub fn reset(schema: &str, key: &str) {
-    let settings = gio::Settings::new(schema);
-    settings.reset(key);
+    if let Some(settings) = settings_for(schema, key) {
+        settings.reset(key);
+    }
 }
 
 /// Every key that TweaksPlus can change.
 ///
 /// Only these keys are reset by "Reset All Tweaks" so unrelated settings from
-/// the same schemas are left untouched.
+/// the same schemas are left untouched. Keys that are not available on the
+/// current system are skipped by [`reset`].
 pub const TWEAK_KEYS: &[(&str, &str)] = &[
     ("org.gnome.desktop.interface", "enable-animations"),
     ("org.gnome.desktop.interface", "cursor-theme"),
@@ -96,21 +124,60 @@ pub const TWEAK_KEYS: &[(&str, &str)] = &[
     ("org.gnome.desktop.datetime", "automatic-timezone"),
     ("org.gnome.settings-daemon.plugins.power", "lid-close-ac-action"),
     ("org.gnome.settings-daemon.plugins.power", "lid-close-battery-action"),
-    ("org.gnome.settings-daemon.plugins.power", "power-button-action"),
+    (
+        "org.gnome.settings-daemon.plugins.power",
+        "power-button-action",
+    ),
     ("org.gnome.settings-daemon.plugins.power", "idle-dim"),
     ("org.gnome.settings-daemon.plugins.power", "idle-brightness"),
     (
         "org.gnome.settings-daemon.plugins.power",
         "power-saver-profile-on-low-battery",
     ),
+    (
+        "org.gnome.settings-daemon.plugins.power",
+        "sleep-inactive-ac-type",
+    ),
+    (
+        "org.gnome.settings-daemon.plugins.power",
+        "sleep-inactive-battery-type",
+    ),
     ("org.gnome.desktop.session", "idle-delay"),
 ];
 
 /// Resets every tweak managed by TweaksPlus to its default value.
+///
+/// Unavailable keys are skipped, so the same build works on distributions
+/// with different GSettings schemas (Ubuntu 26.04 and CachyOS GNOME alike).
 pub fn reset_all() {
     for (schema, key) in TWEAK_KEYS {
-        if schema_available(schema) {
-            reset(schema, key);
+        // The idle-action keys are only used as a fallback on GNOME releases
+        // that no longer have lid-close keys. Do not touch them elsewhere.
+        if *key == "sleep-inactive-ac-type" || *key == "sleep-inactive-battery-type" {
+            if schema_available("org.gnome.settings-daemon.plugins.power")
+                && key_available(
+                    "org.gnome.settings-daemon.plugins.power",
+                    "lid-close-ac-action",
+                )
+            {
+                continue;
+            }
+        }
+        reset(schema, key);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn missing_schemas_and_keys_are_reported() {
+        assert!(!schema_available("org.mkhrussell.no.such.schema"));
+        assert!(!key_available("org.mkhrussell.no.such.schema", "key"));
+        if schema_available("org.gnome.desktop.interface") {
+            assert!(key_available("org.gnome.desktop.interface", "enable-animations"));
+            assert!(!key_available("org.gnome.desktop.interface", "no-such-key"));
         }
     }
 }

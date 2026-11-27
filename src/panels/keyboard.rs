@@ -74,13 +74,21 @@ pub fn build() -> Panel {
 }
 
 fn show_layout_options(parent: Option<&gtk4::Window>) {
-    let settings = gio::Settings::new(INPUT_SOURCES);
+    let settings = crate::settings::settings_for(INPUT_SOURCES, "xkb-options");
     let group = adw::PreferencesGroup::builder()
         .title("Layout Options")
         .description("Common XKB options for keyboard layouts")
         .build();
-    for (xkb_group, value, label) in XKB_OPTIONS {
-        group.add(&xkb_option_row(&settings, xkb_group, value, label));
+    if let Some(settings) = &settings {
+        for (xkb_group, value, label) in XKB_OPTIONS {
+            group.add(&xkb_option_row(settings, xkb_group, value, label));
+        }
+    } else {
+        group.add(
+            &adw::ActionRow::builder()
+                .title("Layout options are not available in this GNOME version")
+                .build(),
+        );
     }
 
     let dialog = adw::Dialog::builder()

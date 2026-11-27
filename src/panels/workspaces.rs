@@ -30,14 +30,15 @@ pub fn build() -> Panel {
         "Dynamic Workspaces",
         Some("Automatically create and remove workspaces as needed"),
     );
-    let mutter = gio::Settings::new("org.gnome.mutter");
-    let sync = clone!(#[weak] count, move |settings: &gio::Settings| {
-        count.set_sensitive(!settings.boolean("dynamic-workspaces"));
-    });
-    sync(&mutter);
-    mutter.connect_changed(Some("dynamic-workspaces"), move |settings, _| {
-        sync(settings);
-    });
+    if let Some(mutter) = crate::settings::settings_for("org.gnome.mutter", "dynamic-workspaces") {
+        let sync = clone!(#[weak] count, move |settings: &gio::Settings| {
+            count.set_sensitive(!settings.boolean("dynamic-workspaces"));
+        });
+        sync(&mutter);
+        mutter.connect_changed(Some("dynamic-workspaces"), move |settings, _| {
+            sync(settings);
+        });
+    }
 
     group.add(&dynamic);
     group.add(&count);

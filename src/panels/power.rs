@@ -26,19 +26,39 @@ const BUTTON_ACTIONS: &[(&str, &str)] = &[
 pub fn build() -> Panel {
     let page = adw::PreferencesPage::builder().title("Power").build();
 
+    // Older GNOME releases (including Ubuntu 26.04) expose dedicated lid-close
+    // keys. Newer rolling releases such as CachyOS GNOME 51 removed them and
+    // use the equivalent idle-action keys, which share the same enum.
+    let native_lid_keys = crate::settings::key_available(POWER, "lid-close-ac-action")
+        && crate::settings::key_available(POWER, "lid-close-battery-action");
+    let (ac_key, battery_key) = if native_lid_keys {
+        ("lid-close-ac-action", "lid-close-battery-action")
+    } else {
+        ("sleep-inactive-ac-type", "sleep-inactive-battery-type")
+    };
+
     let lid = adw::PreferencesGroup::builder()
-        .title("Lid Close Action")
+        .title(if native_lid_keys {
+            "Lid Close Action"
+        } else {
+            "Sleep Action"
+        })
         .build();
+    if !native_lid_keys {
+        lid.set_description(Some(
+            "Lid-close actions are managed by the system in this GNOME release",
+        ));
+    }
     lid.add(&rows::combo(
         POWER,
-        "lid-close-ac-action",
+        ac_key,
         "When Plugged In",
         None,
         LID_ACTIONS,
     ));
     lid.add(&rows::combo(
         POWER,
-        "lid-close-battery-action",
+        battery_key,
         "On Battery",
         None,
         LID_ACTIONS,

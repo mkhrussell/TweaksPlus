@@ -39,10 +39,11 @@ pub fn build() -> Panel {
     }
 
     let buttons = adw::PreferencesGroup::builder().title("Titlebar Buttons").build();
-    let settings = gio::Settings::new(WM);
-    buttons.add(&button_switch(&settings, "maximize", "Maximize"));
-    buttons.add(&button_switch(&settings, "minimize", "Minimize"));
-    buttons.add(&placement_row(&settings));
+    if let Some(settings) = crate::settings::settings_for(WM, "button-layout") {
+        buttons.add(&button_switch(&settings, "maximize", "Maximize"));
+        buttons.add(&button_switch(&settings, "minimize", "Minimize"));
+        buttons.add(&placement_row(&settings));
+    }
 
     let behaviour = adw::PreferencesGroup::builder().title("Click Actions").build();
     behaviour.add(&rows::switch(
@@ -96,15 +97,16 @@ pub fn build() -> Panel {
         "Raise Windows When Focused",
         Some("Only available with hover or follow-mouse focus"),
     );
-    let focus_settings = gio::Settings::new(WM);
-    let sync_sensitivity = clone!(#[weak] raise, move |settings: &gio::Settings| {
-        let mode = settings.string("focus-mode");
-        raise.set_sensitive(mode.as_str() != "click");
-    });
-    sync_sensitivity(&focus_settings);
-    focus_settings.connect_changed(Some("focus-mode"), move |settings, _| {
-        sync_sensitivity(settings);
-    });
+    if let Some(focus_settings) = crate::settings::settings_for(WM, "focus-mode") {
+        let sync_sensitivity = clone!(#[weak] raise, move |settings: &gio::Settings| {
+            let mode = settings.string("focus-mode");
+            raise.set_sensitive(mode.as_str() != "click");
+        });
+        sync_sensitivity(&focus_settings);
+        focus_settings.connect_changed(Some("focus-mode"), move |settings, _| {
+            sync_sensitivity(settings);
+        });
+    }
     focus.add(&raise);
 
     page.add(&actions);

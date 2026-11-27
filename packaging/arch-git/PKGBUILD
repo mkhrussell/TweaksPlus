@@ -1,0 +1,49 @@
+# Maintainer: Kamrul Hasan <mkhrussell@gmail.com>
+# AUR VCS package for TweaksPlus (tracks the latest source, including
+# development builds of the CachyOS/Ubuntu compatibility fixes).
+pkgname=tweaksplus-git
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="Advanced GNOME customization tool for Ubuntu and CachyOS (Git version)"
+arch=('x86_64' 'aarch64')
+url="https://github.com/mkhrussell/TweaksPlus"
+license=('GPL-3.0-or-later')
+depends=('gtk4' 'libadwaita' 'glib2' 'pango' 'adwaita-icon-theme')
+makedepends=('git' 'cargo' 'rust' 'pkgconf')
+conflicts=('tweaksplus')
+provides=('tweaksplus')
+optdepends=(
+  'gnome-shell-extensions: optional User Themes support'
+  'gnome-shell-extension-desktop-icons-ng: extra desktop icon options'
+)
+source=("${pkgname%-git}::git+https://github.com/mkhrussell/TweaksPlus.git")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "$srcdir/${pkgname%-git}"
+    awk -F'"' '/^version = /{print $2; exit}' Cargo.toml
+}
+
+build() {
+    cd "$srcdir/${pkgname%-git}"
+    export CARGO_HOME="$srcdir/cargo-home"
+    export RUSTFLAGS="${RUSTFLAGS:-} --remap-path-prefix=$srcdir=."
+    cargo build --release --locked
+}
+
+check() {
+    cd "$srcdir/${pkgname%-git}"
+    export CARGO_HOME="$srcdir/cargo-home"
+    cargo test --release --locked
+}
+
+package() {
+    cd "$srcdir/${pkgname%-git}"
+    install -Dm755 "target/release/tweaksplus" "$pkgdir/usr/bin/tweaksplus"
+    install -Dm644 "data/com.mkhrussell.TweaksPlus.desktop" \
+        "$pkgdir/usr/share/applications/com.mkhrussell.TweaksPlus.desktop"
+    install -Dm644 "data/icons/hicolor/scalable/apps/com.mkhrussell.TweaksPlus.svg" \
+        "$pkgdir/usr/share/icons/hicolor/scalable/apps/com.mkhrussell.TweaksPlus.svg"
+    install -Dm644 "data/icons/hicolor/512x512/apps/com.mkhrussell.TweaksPlus.png" \
+        "$pkgdir/usr/share/icons/hicolor/512x512/apps/com.mkhrussell.TweaksPlus.png"
+}

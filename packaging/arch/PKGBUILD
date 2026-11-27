@@ -1,0 +1,61 @@
+# Maintainer: Kamrul Hasan <mkhrussell@gmail.com>
+# AUR-ready PKGBUILD for TweaksPlus (Arch Linux / CachyOS GNOME).
+#
+# Release build (AUR): fetches the tagged source archive from GitHub.
+# Local build: run scripts/build-arch-package.sh from the repository root,
+# which places tweaksplus-$pkgver-src.tar.xz next to this file and builds it.
+pkgname=tweaksplus
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="Advanced GNOME customization tool for Ubuntu and CachyOS"
+arch=('x86_64' 'aarch64')
+url="https://github.com/mkhrussell/TweaksPlus"
+license=('GPL-3.0-or-later')
+depends=('gtk4' 'libadwaita' 'glib2' 'pango' 'adwaita-icon-theme')
+makedepends=('cargo' 'rust' 'pkgconf')
+conflicts=('tweaksplus-git')
+optdepends=(
+  'gnome-shell-extensions: optional User Themes support'
+  'gnome-shell-extension-desktop-icons-ng: extra desktop icon options'
+)
+if [[ ${TWEAKSPLUS_LOCAL_SOURCE:-0} == 1 ]]; then
+    source=("tweaksplus-$pkgver-src.tar.xz")
+else
+    source=("tweaksplus-$pkgver.tar.gz::https://github.com/mkhrussell/TweaksPlus/archive/refs/tags/v$pkgver.tar.gz")
+fi
+sha256sums=('SKIP')
+
+# Replace SKIP with the tarball checksum after tagging the release:
+#   sha256sums=('...')  # output of: curl -fsSL <source url> | sha256sum
+
+_cd_source() {
+    if [[ -d "$srcdir/tweaksplus-$pkgver" ]]; then
+        cd "$srcdir/tweaksplus-$pkgver"
+    else
+        cd "$srcdir/TweaksPlus-$pkgver"
+    fi
+}
+
+build() {
+    _cd_source
+    export CARGO_HOME="$srcdir/cargo-home"
+    export RUSTFLAGS="${RUSTFLAGS:-} --remap-path-prefix=$srcdir=."
+    cargo build --release --locked
+}
+
+check() {
+    _cd_source
+    export CARGO_HOME="$srcdir/cargo-home"
+    cargo test --release --locked
+}
+
+package() {
+    _cd_source
+    install -Dm755 "target/release/tweaksplus" "$pkgdir/usr/bin/tweaksplus"
+    install -Dm644 "data/com.mkhrussell.TweaksPlus.desktop" \
+        "$pkgdir/usr/share/applications/com.mkhrussell.TweaksPlus.desktop"
+    install -Dm644 "data/icons/hicolor/scalable/apps/com.mkhrussell.TweaksPlus.svg" \
+        "$pkgdir/usr/share/icons/hicolor/scalable/apps/com.mkhrussell.TweaksPlus.svg"
+    install -Dm644 "data/icons/hicolor/512x512/apps/com.mkhrussell.TweaksPlus.png" \
+        "$pkgdir/usr/share/icons/hicolor/512x512/apps/com.mkhrussell.TweaksPlus.png"
+}

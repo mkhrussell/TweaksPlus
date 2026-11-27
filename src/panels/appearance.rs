@@ -97,9 +97,13 @@ fn shell_theme_row() -> gtk4::Widget {
         )
         .upcast()
     } else {
+        let hint = crate::settings::environment::extension_hint(
+            None,
+            "Install the User Themes extension to change the Shell theme",
+        );
         adw::ActionRow::builder()
             .title("Shell")
-            .subtitle("Install the User Themes extension to change the Shell theme")
+            .subtitle(hint)
             .sensitive(false)
             .build()
             .upcast()

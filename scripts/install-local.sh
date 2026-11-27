@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Install TweaksPlus from a GitHub release into ~/.local without building it.
+# Works on Debian/Ubuntu (.deb asset) and Arch/CachyOS (portable tar.xz asset,
+# with a .deb fallback that does not require dpkg-deb).
 #
 # Environment:
-#   RELEASE_TAG   Install a specific release tag, for example v1.0.0.
+#   RELEASE_TAG   Install a specific release tag, for example v1.1.0.
 #                 By default the latest release is used.
 #   GITHUB_TOKEN  Optional GitHub token for API rate limits.
 
@@ -21,11 +23,21 @@ need() {
 }
 
 need curl
-need dpkg-deb
 need python3
+need tar
 
-ARCH="$(dpkg --print-architecture 2>/dev/null || true)"
-[[ -n "$ARCH" ]] || die "could not determine the Debian architecture"
+if command -v dpkg >/dev/null 2>&1; then
+    ARCH="$(dpkg --print-architecture 2>/dev/null || true)"
+else
+    # Arch/CachyOS does not ship dpkg. Map the kernel architecture to the
+    # Debian-style names used in release asset filenames.
+    case "$(uname -m)" in
+        x86_64) ARCH=amd64 ;;
+        aarch64|arm64) ARCH=arm64 ;;
+        armv7*) ARCH=armhf ;;
+    esac
+fi
+[[ -n "${ARCH:-}" ]] || die "could not determine the package architecture"
 
 token="${GITHUB_TOKEN:-}"
 if [[ -z "$token" ]] && command -v git >/dev/null 2>&1; then
@@ -62,14 +74,19 @@ import sys
 
 data = json.loads(sys.argv[1])
 arch = sys.argv[2]
+suffixes = (".tar.xz", ".tar.gz", ".deb")
 assets = [
     asset for asset in data.get("assets", [])
     if asset["name"].startswith("tweaksplus_")
-    and asset["name"].endswith("_" + arch + ".deb")
+    and any(asset["name"].endswith("_" + arch + suffix) for suffix in suffixes)
 ]
 if not assets:
-    print("no tweaksplus .deb asset found for architecture " + arch, file=sys.stderr)
+    print("no tweaksplus package found for architecture " + arch, file=sys.stderr)
     sys.exit(1)
+# Prefer the portable archive; fall back to the Debian package.
+assets.sort(key=lambda asset: suffixes.index(
+    next(suffix for suffix in suffixes if asset["name"].endswith("_" + arch + suffix))
+))
 asset = assets[0]
 print(asset["name"])
 print(asset["browser_download_url"])
@@ -87,9 +104,36 @@ printf 'Downloading %s from %s\n' "$asset_name" "$tag"
 curl -fsSL "$asset_url" -o "$tmp/$asset_name"
 
 mkdir -p "$tmp/root"
-dpkg-deb -x "$tmp/$asset_name" "$tmp/root"
+case "$asset_name" in
+    *.tar.xz|*.tar.gz)
+        tar -xf "$tmp/$asset_name" -C "$tmp/root"
+        ;;
+    *.deb)
+        if command -v dpkg-deb >/dev/null 2>&1; then
+            dpkg-deb -x "$tmp/$asset_name" "$tmp/root"
+        else
+            # Arch/CachyOS: extract the data member with binutils + tar.
+            need ar
+            member="$(ar t "$tmp/$asset_name" | grep '^data\.tar' | head -1 || true)"
+            [[ -n "$member" ]] || die "$asset_name has no data.tar member"
+            case "$member" in
+                *.gz)  ar p "$tmp/$asset_name" "$member" | tar -xz -C "$tmp/root" ;;
+                *.xz)  ar p "$tmp/$asset_name" "$member" | tar -xJ -C "$tmp/root" ;;
+                *.zst) ar p "$tmp/$asset_name" "$member" | tar --zstd -x -C "$tmp/root" ;;
+                *)     ar p "$tmp/$asset_name" "$member" | tar -x -C "$tmp/root" ;;
+            esac
+        fi
+        ;;
+    *) die "unsupported release asset: $asset_name" ;;
+esac
 
 src="$tmp/root/usr"
+if [[ ! -f "$src/bin/tweaksplus" ]]; then
+    # Some archives contain a top-level version directory.
+    found="$(find "$tmp/root" -path '*/usr/bin/tweaksplus' -print -quit 2>/dev/null || true)"
+    [[ -n "$found" ]] || die "package is missing usr/bin/tweaksplus"
+    src="${found%/usr/bin/tweaksplus}"
+fi
 [[ -f "$src/bin/tweaksplus" ]] || die "package is missing usr/bin/tweaksplus"
 [[ -f "$src/share/applications/$APP_ID.desktop" ]] || die "package is missing the desktop file"
 

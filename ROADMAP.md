@@ -37,10 +37,20 @@ Shell and changes made elsewhere update the UI.
 - [x] Reset All only touches keys TweaksPlus manages
 - [x] Themes are discovered from the same XDG paths GNOME Tweaks scans
 
+## v1.1.0 — Cross-distribution support ✅
+
+- [x] Guard every GSettings access by schema **and** key availability
+- [x] Adapt the Power panel when GNOME removes lid-close keys (CachyOS GNOME 51+)
+- [x] Distribution-aware hints for optional Shell extensions (Ubuntu/Arch)
+- [x] Neutral branding: no Ubuntu-only paths or assumptions in the binary
+- [x] Arch/CachyOS PKGBUILDs (stable and Git variants, with `.SRCINFO`)
+- [x] Portable `.tar.xz` releases and a dpkg-free user-local installer
+- [x] Debian/Ubuntu packaging remains unchanged in behaviour
+
 ## v1.x — Beyond GNOME Tweaks (planned)
 
 - Settings profiles / presets with one-click switching
 - Import and export of tweak configurations
-- Ubuntu-specific integrations ( dock, PPAs, live wallpapers)
+- Distribution-specific integrations (Ubuntu dock/PPAs, CachyOS packages)
 - A registry so third-party plugins can contribute panels
 - Flatpak packaging and CI releases
